@@ -1,0 +1,12 @@
+fixtures:
+  repositories:
+    stdlib:
+      repo: "https://github.com/Adaptavist/puppet-stdlib"
+    packages_repos:
+      repo: "ssh://git@stash.adaptavist.com:7999/pup/puppet-packages_repos.git"
+    yum:
+      repo: "https://github.com/Adaptavist/puppet-yum"
+    puppi:
+      repo: "https://github.com/Adaptavist/puppet-puppi"
+  symlinks:
+    'lsyncd': "#{source_dir}"

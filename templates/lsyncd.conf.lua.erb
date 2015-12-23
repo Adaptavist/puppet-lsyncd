@@ -1,0 +1,31 @@
+-- This file is being maintained by Puppet.
+-- DO NOT EDIT
+
+settings {
+	statusFile    = "<%=@status_file%>",
+	maxProcesses  =	<%=@max_processes%>,
+	logident      = "<%=@log_ident%>",
+	logfacility   = "<%=@log_facility%>",
+	maxDelays     = <%=@max_delays%>,
+	<% if @real_insist_start %>insist		= true,<% end %> 
+}
+
+<% @real_rsync_modules.each_pair do |name, rsync_module| -%>
+sync {
+	default.rsync,
+	source		= "<%=rsync_module['source']%>",
+	target		= "<%=rsync_module['target']%>",
+	<% if rsync_module['init_sync'] == false %>init		= false,<% end %>
+	<% if rsync_module['delay'] %>delay	= <%=rsync_module['delay']%>,<% end %>
+	<% if rsync_module['max_delays'] -%>maxDelays = <%=rsync_module['max_delays']%>,<% end -%> 
+        rsync = {
+                <% if rsync_module['rsync_binary'] -%>binary = "<%=rsync_module['rsync_binary']%>"<% end -%> 
+                <% if rsync_module['rsync_verbose'] -%>verbose  = <%=rsync_module['rsync_verbose']%>,<% end -%> 
+                <% if rsync_module['rsync_compress'] -%>compress  = <%=rsync_module['rsync_compress']%>,<% end -%> 
+                <% if rsync_module['rsync_archive'] -%>archive  = <%=rsync_module['rsync_archive']%>,<% end -%> 
+                <% if rsync_module['rsync_hard_links'] -%>hard_links = <%=rsync_module['rsync_hard_links']%>,<% end -%> 
+        },
+	<%- if rsync_module['exclude_from'] -%>	excludeFrom = "<%=rsync_module['exclude_from']%>"<% end -%>
+}
+
+<% end -%>
