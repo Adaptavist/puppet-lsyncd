@@ -171,9 +171,9 @@ class lsyncd (
     )  {
 
     #some config can be set at either global or host level, therefore check to see if the hosts hash exists
-    if ($host != undef) {
+    if ($::host != undef) {
         #if so validate the hash
-        validate_hash($host)
+        validate_hash($::host)
 
         #if a host level "merge_modules" flag has been set use it, otherwise use the global flag
         $real_merge_modules = $host['lsyncd::merge_modules']? {
@@ -245,7 +245,7 @@ class lsyncd (
         RedHat: {
             include packages_repos
             package { $package_name:
-                ensure => installed,
+                ensure  => installed,
                 require => Class['packages_repos'],
             }
         }
@@ -261,25 +261,25 @@ class lsyncd (
         #set the value in sysctl.conf to ensure it survives a reboot
         augeas { "sysctl_config_${sysctl_inotify_key}":
             context => "/files${sysctl_config}",
-            onlyif => "get $sysctl_inotify_key != '$real_inotify_watches'",
-            changes => "set $sysctl_inotify_key '$real_inotify_watches'",
-            notify => Exec["refresh_sysctl"],
+            onlyif  => "get ${sysctl_inotify_key} != '${real_inotify_watches}'",
+            changes => "set ${sysctl_inotify_key} '${real_inotify_watches}'",
+            notify  => Exec['refresh_sysctl'],
         }
 
         #change the current value using the sysctl command line tool
         exec { 'refresh_sysctl':
-            command => "sysctl -w $sysctl_inotify_key=$real_inotify_watches",
-            path => "/usr/bin:/usr/sbin:/bin:/sbin",
+            command => "sysctl -w ${sysctl_inotify_key}=${real_inotify_watches}",
+            path    => '/usr/bin:/usr/sbin:/bin:/sbin',
         }
 
     }
 
     #if we are using upstart instead of sysvinit create upstart config (only supported on Debian systems)
-    if ($use_upstart) and ($::osfamily == "Debian") {
+    if ($use_upstart) and ($::osfamily == 'Debian') {
         file { '/etc/init/lsyncd.conf':
             source => 'puppet:///modules/lsyncd/lsyncd.conf',
-            owner   => 'root',
-            group   => 'root',
+            owner  => 'root',
+            group  => 'root',
         }
 
         #remove sysvinit scrtipt and replace with a softlink to the upstart job
@@ -293,10 +293,10 @@ class lsyncd (
     #in order to ensure ONLY the elements specified in hiera are present remove existing files from the config directory
     if ($real_flush_config) {
         #then remove the config files
-        exec { "del lsync configs":
-            command => "rm -f $config_dir/*",
-            path => "/usr/bin:/usr/sbin:/bin",
-            onlyif => "test -d $config_dir"
+        exec { 'del lsync configs':
+            command => "rm -f ${config_dir}/*",
+            path    => '/usr/bin:/usr/sbin:/bin',
+            onlyif  => "test -d ${config_dir}"
         }
     }
 
@@ -315,11 +315,11 @@ class lsyncd (
 
     service {
         $service_name:
-            ensure      => running,
-            enable      => true,
+            ensure => running,
+            enable => true,
     }
 
-    file { "$config_dir/$config_file":
+    file { "${config_dir}/${config_file}":
             content => template('lsyncd/lsyncd.conf.lua.erb'),
             owner   => 'root',
             group   => 'root',
@@ -327,10 +327,10 @@ class lsyncd (
     }
 
     #if on a Red Hat based system create a softlink  for the config file
-    if ( $::osfamily == "RedHat" ) {
+    if ( $::osfamily == 'RedHat' ) {
         file { $rh_config_file:
             ensure => 'link',
-            target => "$config_dir/$config_file",
+            target => "${config_dir}/${config_file}",
         }
     }
     if str2bool($::selinux) {
