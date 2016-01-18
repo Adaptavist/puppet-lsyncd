@@ -1,4 +1,5 @@
 # lsyncd Module
+[![Build Status](https://travis-ci.org/Adaptavist/puppet-lsyncd.svg?branch=master)](https://travis-ci.org/Adaptavist/puppet-lsyncd)
 
 ## Overview
 
@@ -137,7 +138,7 @@ The amount of files that can exist in the replication queue before a sync is for
 in the queue, this overrides the sync delay option (defaulted to 15 seconds for rsync). If set in the `sync` section this value overides the global
 maxDelays option for this particular sync
 
-**The "rsync" options avaliable in this module are only a handfull of those supported, for a complete list visit https://github.com/axkibe/lsyncd/wiki/Lsyncd%202.1.x%20%E2%80%96%20Layer%204%20Config%20%E2%80%96%20Default%20Behavior**
+**The "rsync" options avaliable in this module are only a handfull of those supported, for a complete list visit the lsync [wiki](https://github.com/axkibe/lsyncd/wiki/Lsyncd%202.1.x%20%E2%80%96%20Layer%204%20Config%20%E2%80%96%20Default%20Behavior)**
   
   
 ##Hiera Examples:
