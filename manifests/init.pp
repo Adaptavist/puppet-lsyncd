@@ -242,7 +242,7 @@ class lsyncd (
 
     #install the package, if on a Red Hat based system ensure rpmforge repo is added (where lsync lives)
     case $::osfamily {
-        RedHat: {
+        'RedHat': {
             include packages_repos
             package { $package_name:
                 ensure  => installed,

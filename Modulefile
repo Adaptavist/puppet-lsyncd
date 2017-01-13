@@ -1,5 +1,5 @@
 name 'adaptavist-lsyncd'
-version '0.1.7'
+version '1.0.0'
 source 'https://github.com/Adaptavist/puppet-lsyncd.git'
 author 'mhope'
 summary 'lsyncd Module' 

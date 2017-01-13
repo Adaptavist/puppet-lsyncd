@@ -44,9 +44,10 @@ describe 'lsyncd', :type => 'class' do
       { :rsync_modules    =>  global_module }
     }
 
-    let(:facts) {
-     { :osfamily     => 'RedHat' }
-    }
+    let(:facts) {{
+      :osfamily     => 'RedHat',
+      :operatingsystemrelease => '7.1'
+     }}
 
     it do
       should contain_file('/etc/lsyncd.conf').with(
@@ -101,9 +102,10 @@ describe 'lsyncd', :type => 'class' do
       }
     }
 
-    let(:facts) {
-     { :osfamily     => 'RedHat' }
-    }
+    let(:facts) {{ 
+      :osfamily => 'RedHat',
+      :operatingsystemrelease => '7.1'
+    }}
 
     it do
       should_not contain_file('/etc/init/lsyncd.conf')
@@ -120,9 +122,10 @@ describe 'lsyncd', :type => 'class' do
       { :rsync_modules    =>  global_module }
     }
 
-    let(:facts) {
-     { :osfamily     => 'RedHat' }
-    }
+    let(:facts) {{ 
+      :osfamily     => 'RedHat',
+      :operatingsystemrelease => '7.1'
+    }}
 
     it do
       should contain_class('packages_repos')
@@ -135,9 +138,10 @@ describe 'lsyncd', :type => 'class' do
       { :rsync_modules    =>  global_module }
     }
 
-    let(:facts) {
-     { :osfamily     => 'Debian' }
-    }
+    let(:facts) {{
+      :osfamily     => 'Debian',
+      :operatingsystemrelease => '14.0.1'
+    }}
 
     it do
       should_not contain_class('packages_repos')
