@@ -230,7 +230,6 @@ describe 'lsyncd', :type => 'class' do
       should contain_file('/etc/lsyncd').with(
             'ensure'         => 'directory'
       )
-      should_not contain_file('/etc/lsyncd/lsyncd.conf.lua').with_content(/\s*localhost::opt-fast\s*/)
       should contain_file('/etc/lsyncd/lsyncd.conf.lua').with_content(/\s*localhost::opt-slow\s*/)
     end
   end
