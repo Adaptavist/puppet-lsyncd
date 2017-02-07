@@ -247,6 +247,7 @@ class lsyncd (
             package { $package_name:
                 ensure  => installed,
                 require => Class['packages_repos'],
+                before  => File[$config_dir],
             }
         }
         default: {
@@ -280,12 +281,14 @@ class lsyncd (
             source => 'puppet:///modules/lsyncd/lsyncd.conf',
             owner  => 'root',
             group  => 'root',
+            before => Service[$service_name],
         }
 
         #remove sysvinit scrtipt and replace with a softlink to the upstart job
         file { '/etc/init.d/lsyncd':
             ensure => 'link',
             target => '/lib/init/upstart-job',
+            before => Service[$service_name],
         }
     }
     #TODO: Add in systemd support ;-)
@@ -296,21 +299,25 @@ class lsyncd (
         exec { 'del lsync configs':
             command => "rm -f ${config_dir}/*",
             path    => '/usr/bin:/usr/sbin:/bin',
-            onlyif  => "test -d ${config_dir}"
+            onlyif  => "test -d ${config_dir}",
+            before  => File[$config_dir],
+        }
+    }
+
+    #create any required files, such as rsync exclude files..
+    if ($real_create_files) {
+        #if so validate the hash
+        class { 'lsyncd::create_lsyncd_config_files':
+            config_files => $real_create_files,
+            before       => File["${config_dir}/${config_file}"],
+            require      => File[$config_dir]
         }
     }
 
     #make sure lsync config dir exists
     file {$config_dir:
         ensure => directory,
-
-    }
-
-    #create any required files, such as rsync exclude files..
-    if ($real_create_files) {
-        #if so validate the hash
-        validate_hash($real_create_files)
-        create_resources('file', $real_create_files)
+        before => File["${config_dir}/${config_file}"]
     }
 
     service {
@@ -319,18 +326,29 @@ class lsyncd (
             enable => true,
     }
 
-    file { "${config_dir}/${config_file}":
+    #if on a Red Hat based system create a softlink  for the config file
+    if ( $::osfamily == 'RedHat' ) {
+        file { "${config_dir}/${config_file}":
             content => template('lsyncd/lsyncd.conf.lua.erb'),
             owner   => 'root',
             group   => 'root',
-            notify  => Service[$service_name],
-    }
+            before  => Service[$service_name],
+        }
 
-    #if on a Red Hat based system create a softlink  for the config file
-    if ( $::osfamily == 'RedHat' ) {
         file { $rh_config_file:
-            ensure => 'link',
-            target => "${config_dir}/${config_file}",
+            ensure  => 'link',
+            target  => "${config_dir}/${config_file}",
+            before  => Service[$service_name],
+            require => File["${config_dir}/${config_file}"],
+            notify  => Service[$service_name],
+        }
+    } else {
+        file { "${config_dir}/${config_file}":
+            content => template('lsyncd/lsyncd.conf.lua.erb'),
+            owner   => 'root',
+            group   => 'root',
+            before  => Service[$service_name],
+            notify  => Service[$service_name],
         }
     }
     if str2bool($::selinux) {
