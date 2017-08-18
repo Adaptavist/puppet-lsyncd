@@ -116,6 +116,61 @@ describe 'lsyncd', :type => 'class' do
     end
   end
 
+  context "Should create custom systemd unit file on RedHat systems if instructed to do so" do
+
+    let(:params) {
+      { :rsync_modules    =>  global_module }
+    }
+
+    let(:facts) {{
+      :osfamily     => 'RedHat',
+      :operatingsystemrelease => '7.1'
+     }}
+
+    it do
+      should contain_file('/etc/systemd/system/lsyncd.service').with(
+            'source'  => 'puppet:///modules/lsyncd/systemd.service',
+            'owner'   => 'root',
+            'group'   => 'root',
+            'before'  => 'Service[lsyncd]',
+            'require' => 'Package[lsyncd]',
+            'notify'  => 'Exec[reload-systemd]',
+      )
+    end
+  end
+
+  context "Should not create custom systemd unit file on RedHat systems if instructed not to do so" do
+
+    let(:params) {{
+       :rsync_modules    =>  global_module, 
+       :use_custom_systemd => false,
+    }}
+
+    let(:facts) {{
+      :osfamily     => 'RedHat',
+      :operatingsystemrelease => '7.1'
+     }}
+
+    it do
+      should_not contain_file('/etc/systemd/system/lsyncd.service')
+    end
+  end
+
+  context "Should not create custom systemd unit file on non RedHat systems" do
+
+    let(:params) {
+      { :rsync_modules    =>  global_module }
+    }
+
+    let(:facts) {{
+      :osfamily     => 'Debian',
+     }}
+
+    it do
+      should_not contain_file('/etc/systemd/system/lsyncd.service')
+    end
+  end
+
   context "Should install packages_repos YUM repos on RedHat systems" do
 
     let(:params) {
