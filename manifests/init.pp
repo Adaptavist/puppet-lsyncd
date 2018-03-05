@@ -85,6 +85,14 @@
 # 1001 items are in the queue, this overrides the sync delay option (defaulted to 15 seconds for rsync targets).
 # Default: 1000
 #
+# [*systemd_template*]
+# The location of the custom systemd unit file template to be used if the system is running systemd.  
+# Default: 'puppet:///modules/lsyncd/systemd.service',
+#
+# [*systemd_unit_file*]
+# The location on the filesystem of the custom systemd unit file 
+# Default: '/etc/systemd/system/lsyncd.service',
+#
 # Hiera Examples:
 # --------------
 #
@@ -167,7 +175,10 @@ class lsyncd (
     $sysctl_config       =     '/etc/sysctl.conf',
     $sysctl_inotify_key  =     'fs.inotify.max_user_watches',
     $insist_start        =     true,
-    $max_delays          =     1000
+    $max_delays          =     1000,
+    $systemd_template    =     'puppet:///modules/lsyncd/systemd.service',
+    $systemd_unit_file   =     '/etc/systemd/system/lsyncd.service',
+    $use_custom_systemd  =     true,
     )  {
 
     #some config can be set at either global or host level, therefore check to see if the hosts hash exists
@@ -291,7 +302,23 @@ class lsyncd (
             before => Service[$service_name],
         }
     }
-    #TODO: Add in systemd support ;-)
+
+    # if this is CentOS/RHEL >= 7 deploy our custom unit file, the one provided does not auto restart!
+    if ($::osfamily == 'RedHat') and (versioncmp($::operatingsystemrelease,'7') >= 0 and $::operatingsystem != 'Fedora') and (str2bool($use_custom_systemd)) {
+        file { $systemd_unit_file:
+            source  => $systemd_template,
+            owner   => 'root',
+            group   => 'root',
+            before  => Service[$service_name],
+            require => Package[$package_name],
+            notify  => Exec['reload-systemd'],
+        }
+
+        exec { 'reload-systemd':
+            command     => 'systemctl daemon-reload',
+            refreshonly => true,
+        }
+    }
 
     #in order to ensure ONLY the elements specified in hiera are present remove existing files from the config directory
     if ($real_flush_config) {
