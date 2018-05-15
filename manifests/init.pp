@@ -8,9 +8,17 @@
 # The name of the lsyncd OS package.
 # Default: 'lsyncd'
 #
-# [*service_name*}
+# [*service_name*]
 # The name of the lsyncd service.
 # Default: 'lsyncd'
+#
+# [*service_status*]
+# The status puppert should leave the service.
+# Default: 'running'
+#
+# [*service_ensure*]
+# The enabled/disabled state of the service, true = enabled, false = disabled
+# Default: true
 #
 # [*config_dir*]
 # The location of the lsyncd configuration directory.
@@ -159,6 +167,8 @@
 class lsyncd (
     $package_name        =    'lsyncd',
     $service_name        =    'lsyncd',
+    $service_status      =    'running',
+    $service_ensure      =    true,
     $config_dir          =    '/etc/lsyncd',
     $config_file         =    'lsyncd.conf.lua',
     $rh_config_file      =    '/etc/lsyncd.conf',
@@ -349,8 +359,8 @@ class lsyncd (
 
     service {
         $service_name:
-            ensure => running,
-            enable => true,
+            ensure => $service_status,
+            enable => str2bool($service_ensure),
     }
 
     #if on a Red Hat based system create a softlink  for the config file
